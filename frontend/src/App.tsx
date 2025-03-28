@@ -1,36 +1,32 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css'
+import HomePage from './HomePage';
+import OverviewPage from './OverviewPage';
 import {TodoPage} from "./todo/TodoPage.tsx";
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <>
-      <div className="flex space-x-2">
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="min-h-screen min-w-full overflow-hidden">
+          <BrowserRouter>
+              <div className="flex flex-col min-h-screen">
+                  <div className="bg-primary p-4">
+                      <div className="flex space-x-4">
+                          <a href="/" className="text-primary text-xl hover:underline">Home</a>
+                          <a href="/overview" className="text-primary text-xl hover:underline">What's in this App</a>
+                          <a href="/todo" className="text-primary text-xl hover:underline">Your To Do List</a>
+                      </div>
+                  </div>
+                  <div className="flex-1">
+                      <Routes>
+                          <Route index element={<HomePage/>}/>
+                          <Route path="overview" element={<OverviewPage/>}/>
+                          <Route path="todo" element={<TodoPage/>}/>
+                      </Routes>
+                  </div>
+              </div>
+          </BrowserRouter>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-        <TodoPage />
-    </>
   )
 }
 
