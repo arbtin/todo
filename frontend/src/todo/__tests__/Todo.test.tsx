@@ -5,7 +5,15 @@ import TodoPage from "../TodoPage.tsx";
 describe('Todo', () => {
 
     it('should display todo title', async () => {
-        render(<TodoPage/>)
-        expect( screen.getByRole("heading", { name: "Your To Do List" })).toBeVisible()
+        const expected = [
+            {id: 1, text: 'new task', status: 'active'},
+        ]
+        const mockFetchTodos = vi.spyOn(todoService, 'fetchTodos')
+            .mockResolvedValue(expected);
+//        await act( async () => render(<TodoPage/>));
+        render(<TodoPage/>);
+        expect(mockFetchTodos).toHaveBeenCalledOnce();
+        expect( screen.getByRole("heading", { name: /to do list/i })).toBeVisible()
+        expect(await screen.findAllByRole("row")).toHaveLength(1);
     })
 })
