@@ -3,10 +3,10 @@ package com.bridge.example.todo.todo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -14,9 +14,14 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.mockito.Mockito.times;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TodoController.class)
@@ -46,7 +51,6 @@ public class TodoControllerTest {
         Mockito.when(todoService.createTodo(Mockito.any(Todo.class))).thenReturn(savedTodo);
     }
 
-
     @Test
     void shouldAcceptGetRequestToFetchTodos() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/todo"))
@@ -56,10 +60,10 @@ public class TodoControllerTest {
     }
 
     @Test
-    void shouldAcceptPostRequestToCreateTodo() throws Exception {
+    void shouldPostRequestToCreateTodo() throws Exception {
         String savedTodoJson = objectMapper.writeValueAsString(savedTodo);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/todo")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .content(savedTodoJson))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(jsonPath("$.id").value(2))
@@ -68,4 +72,21 @@ public class TodoControllerTest {
         Mockito.verify(todoService).createTodo(any(Todo.class));
     }
 
+    @Test
+    void shouldAcceptPostRequestCreateTodo() throws Exception {
+        // We need to use the same values because of the Mockito verify above
+        Todo postTodo = new Todo("save task", "active");
+        postTodo.setId(2L);
+        String postTodoJson = new ObjectMapper().writeValueAsString(postTodo);
+        String savedTodoJson = new ObjectMapper().writeValueAsString(savedTodo);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/todo")
+                        .contentType(APPLICATION_JSON)
+                        .content(postTodoJson))
+                .andExpect(status().isCreated())
+                .andExpect(content().json(savedTodoJson));
+        ArgumentCaptor<Todo> captor = ArgumentCaptor.forClass(Todo.class);
+        Mockito.verify(todoService, times(1)).createTodo(captor.capture());
+        assertThat(captor.getValue()).usingRecursiveComparison().isEqualTo(postTodo);
+    }
 }
