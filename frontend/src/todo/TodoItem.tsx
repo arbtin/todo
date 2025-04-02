@@ -1,14 +1,14 @@
 import {useState} from "react";
-import { Todo } from "./TodoType.ts";
+import {Todo} from "./TodoType.ts";
 
 type TodoProps = { initialToDo: Todo };
 
 export const TodoItem = ({initialToDo}: TodoProps) => {
 
-    const [todos, setTodos] = useState<Todo>(initialToDo);
+    const [todos, setTodo] = useState<Todo>(initialToDo);
 
     const handleChange = () => {
-        setTodos((t) => ({
+        setTodo((t) => ({
             ...t,
             status: t.status === 'complete' ? 'active' : 'complete'
         }))

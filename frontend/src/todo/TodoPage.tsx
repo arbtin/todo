@@ -1,15 +1,22 @@
 import {useState, useEffect} from "react";
 import {Todo} from "./TodoType.ts";
 import {TodoItem} from "./TodoItem.tsx";
-import { fetchTodos } from "./TodoService.tsx";
+import {createTodo, fetchTodos} from "./TodoService.tsx";
 
 export const TodoPage = () => {
     const [todos, setTodos] = useState<Todo[]>([]);
+    const [newTodoText, setNewTodoText] = useState<string>('');
 
     const refreshData = () => {
         fetchTodos().then(setTodos)
     };
 
+    const handleAdd = () => {
+        createTodo(newTodoText).then(saveTodo => {
+            setTodos((currentItems) => [...currentItems, saveTodo]);
+            setNewTodoText('');
+        })
+    }
     useEffect(() => {
         refreshData()
     }, [])
