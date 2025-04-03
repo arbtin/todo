@@ -56,6 +56,15 @@ describe('Todo Page', () => {
         expect(await screen.findByText(newTodo)).toBeVisible();
     });
 
+    it('should not call createTodo if no text has been entered', async () => {
+        vi.spyOn(todoService, 'fetchTodos').mockResolvedValue([])
+        const mockCreateTodo = vi.spyOn(todoService, 'createTodo').mockRejectedValue('createTodo was called, but should not have been');
+        render(<TodoPage/>)
+        const addButton = screen.getByRole('button', { name: /add/i });
+        await userEvent.click(addButton);
+        expect(mockCreateTodo).not.toHaveBeenCalled();
+    })
+
     it('should delete existing to do item', async () => {
         const someTodos = [
         {id: 5, text: 'dont delete me', status: 'active'},

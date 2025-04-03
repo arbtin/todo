@@ -12,10 +12,12 @@ export const TodoPage = () => {
     };
 
     const handleAdd = () => {
-        createTodo(newTodoText).then(saveTodo => {
-            setTodos((currentItems) => [...currentItems, saveTodo]);
-            setNewTodoText('');
-        })
+        if(newTodoText) {
+            createTodo(newTodoText).then(saveTodo => {
+                setTodos((currentItems) => [...currentItems, saveTodo]);
+                setNewTodoText('');
+            })
+        }
     }
     useEffect(() => {
         refreshData()
@@ -61,20 +63,21 @@ export const TodoPage = () => {
                             </tbody>
                         </table>
                         <div className="flex-box space-y-6 pt-2">
-                            <label htmlFor="text" className="relative pl-3 text-sm/6 font-medium dark:text-white-900">Add Task</label>
+                            <label htmlFor="text" className="relative pl-3 mr-2 text-sm/6 font-medium dark:text-white-900">Add Task:</label>
                             <input
                                 type="text"
                                 name="text"
                                 id="text"
                                 value={newTodoText}
                                 onChange={(e) => setNewTodoText(e.target.value)}
-                                className="relative min-w-0 grow py-1.5 pr-3 pl-1 dark:text-base text-white-900 placeholder:text-gray-400 focus:outline sm:text-sm/6"
+                                placeholder="Provide a description..."
+                                className="relative rounded-md outline min-w-10 grow py-1.5 pr-3 pl-1 m-5 dark:text-base dark:text-white-900 placeholder:text-gray-400 focus:outline-1 sm:text-sm/6"
                             />
                             <input
                                 type="submit"
                                 onClick={handleAdd}
                                 value="Add"
-                                className="relative rounded-md dark:outline-1 bg-white px-2.5 py-1.5 text-sm font-semibold text-white-900 ring-1 ring-white-300 hover:bg-gray-50"
+                                className="relative rounded-md dark:outline-2 bg-blue-950 px-2.5 py-1.5 text-sm font-semibold text-white-900 ring-1 ring-white-300 hover:bg-blue-400"
                             />
                         </div>
                     </div>
