@@ -1,7 +1,7 @@
 import {useState, useEffect} from "react";
 import {Todo} from "./TodoType.ts";
 import {TodoItem} from "./TodoItem.tsx";
-import {createTodo, fetchTodos} from "./TodoService.tsx";
+import {createTodo, fetchTodos, deleteTodo } from "./TodoService.tsx";
 
 export const TodoPage = () => {
     const [todos, setTodos] = useState<Todo[]>([]);
@@ -20,6 +20,10 @@ export const TodoPage = () => {
     useEffect(() => {
         refreshData()
     }, [])
+
+    const handleDelete = (id: number | null) => {
+        deleteTodo(id).then(refreshData);
+    }
 
     return (
         <>
@@ -52,7 +56,7 @@ export const TodoPage = () => {
                             </thead>
                             <tbody>
                             {todos.map(todo => (
-                                <TodoItem key={todo.id + todo.text} initialToDo={todo}/>
+                                <TodoItem key={todo.id + todo.text} initialToDo={todo} handleDelete={handleDelete}/>
                             ))}
                             </tbody>
                         </table>
