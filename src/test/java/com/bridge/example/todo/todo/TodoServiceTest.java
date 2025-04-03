@@ -8,6 +8,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,9 +44,17 @@ class TodoServiceTest {
 
     @Test
     void createTodo() {
-       when(todoRepository.save(newTodo)).thenReturn(savedTodo);
+        when(todoRepository.save(newTodo)).thenReturn(savedTodo);
         Todo actualRequest = todoService.createTodo(newTodo);
         verify (todoRepository, times (1)).save(any(Todo.class));
         assertThat(actualRequest).isEqualTo(savedTodo);
+    }
+
+    @Test
+    void deleteTodo() {
+        when(todoRepository.save(new Todo(null, "delete todo", "complete"))).thenReturn(new Todo(1L, "delete todo", "complete"));
+        todoService.deleteTodo(1L);
+        Optional<Todo> isDeletedTodo = todoRepository.findById(1L);
+        assertThat(isDeletedTodo.isEmpty());
     }
 }

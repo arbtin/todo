@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
+import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -49,6 +50,7 @@ public class TodoControllerTest {
 
         Mockito.when(todoService.fetchTodos()).thenReturn(todos);
         Mockito.when(todoService.createTodo(Mockito.any(Todo.class))).thenReturn(savedTodo);
+        Mockito.when(todoService.deleteTodo(1L)).thenReturn(1L);
     }
 
     @Test
@@ -88,5 +90,14 @@ public class TodoControllerTest {
         ArgumentCaptor<Todo> captor = ArgumentCaptor.forClass(Todo.class);
         Mockito.verify(todoService, times(1)).createTodo(captor.capture());
         assertThat(captor.getValue()).usingRecursiveComparison().isEqualTo(postTodo);
+    }
+
+    @Test
+    void shouldAcceptDeleteRequestToDeleteTodo() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/todo/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("1"));
+
+        Mockito.verify(todoService).deleteTodo(1L);
     }
 }

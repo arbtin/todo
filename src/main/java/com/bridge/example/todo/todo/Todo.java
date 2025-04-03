@@ -19,13 +19,18 @@ public class Todo {
         this.status = status;
     }
 
+    public Todo(Long id, String text, String status) {
+        this.id = id;
+        this.text = text;
+        this.status = status;
+    }
+
     public Long getId() {
         return id;
     }
 
-    public Todo setId(Long id) {
+    public void setId(Long id) {
         this.id = id;
-        return this;
     }
 
     public String getText() {
