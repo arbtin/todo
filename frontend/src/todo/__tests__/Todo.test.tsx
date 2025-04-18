@@ -1,9 +1,9 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { act } from "react";
 import { userEvent } from '@testing-library/user-event'
 import TodoPage from "../TodoPage.tsx";
 import * as todoService from "../TodoService";
+import {Todo} from "../TodoType";
 
 describe('Todo Page', () => {
     afterEach(() => {
@@ -79,4 +79,39 @@ describe('Todo Page', () => {
         expect(mockDeleteTodo).toHaveBeenCalledWith(6)
         expect(mockFetchTodos).toHaveBeenCalledTimes(2)
     })
+
+    it('should edit existing to do item', async () => {
+        const someTodos = [
+            {id: 5, text: 'update me', status: 'active'},
+            {id: 6, text: 'I\'m done with this task', status: 'complete'},
+        ];
+        const updatedTodo: Todo = {
+            id: 5, text: "edited task", status: "active",
+        };
+        const mockEditTodo = vi.spyOn(todoService, 'editTodo').mockResolvedValue(updatedTodo)
+        const mockFetchTodos = vi.spyOn(todoService, 'fetchTodos').mockResolvedValue(someTodos)
+        render((<TodoPage/>))
+
+        await waitFor(() => {
+            expect(screen.getByText("update me")).toBeInTheDocument();
+        });
+
+        const editButton = await screen.findAllByRole("img", { name: /edit button/i});
+        await userEvent.click(editButton[0]);
+
+        const taskInput = screen.getByLabelText('Update Task');
+        await userEvent.type(taskInput, "edited task");
+
+        const updateButton = screen.getByRole('button', {name: /update/i});
+        await userEvent.click(updateButton);
+
+        expect(mockEditTodo).toHaveBeenCalledWith(5, "edited task", "active");
+
+        await waitFor(() => {
+            expect(screen.getByText("edited task")).toBeInTheDocument();
+            expect(screen.queryByText("update me")).not.toBeInTheDocument();
+        });
+        expect(mockFetchTodos).toHaveBeenCalledTimes(1)
+    })
+
 })

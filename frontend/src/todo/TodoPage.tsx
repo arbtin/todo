@@ -1,31 +1,55 @@
 import {useState, useEffect} from "react";
 import {Todo} from "./TodoType.ts";
 import {TodoItem} from "./TodoItem.tsx";
-import {createTodo, fetchTodos, deleteTodo } from "./TodoService.tsx";
+import {fetchTodos, deleteTodo, createTodo, editTodo} from "./TodoService.tsx";
+import TodoForm from "./TodoForm.tsx";
 
 export const TodoPage = () => {
     const [todos, setTodos] = useState<Todo[]>([]);
-    const [newTodoText, setNewTodoText] = useState<string>('');
+    const [updateTodo, setUpdateTodo] = useState<Todo | undefined>(undefined);
 
     const refreshData = () => {
         fetchTodos().then(setTodos)
     };
 
-    const handleAdd = () => {
-        if(newTodoText) {
-            createTodo(newTodoText).then(saveTodo => {
-                setTodos((currentItems) => [...currentItems, saveTodo]);
-                setNewTodoText('');
-            })
-        }
-    }
     useEffect(() => {
         refreshData()
     }, [])
 
+    const handleAdd = async (text: string) => {
+        if(text) {
+            const saveTodo = await createTodo(text);
+            setTodos((currentItems) => [...currentItems, saveTodo]);
+        }
+    }
+
+    const handleUpdateTodo = async (todo: Todo) => {
+        if (!todo.id) return;
+
+        try {
+            const updatedTodo = await editTodo(todo.id, todo.text);
+            setTodos((currentItems) =>
+                currentItems.map((item) =>
+                    item.id === todo.id ? updatedTodo : item
+                )
+            );
+            setUpdateTodo(undefined);
+        } catch (error) {
+            console.error("Failed to update todo:", error);
+        }
+    };
+
     const handleDelete = (id: number | null) => {
         deleteTodo(id).then(refreshData);
     }
+
+    const handleFormSubmit = async (todo: Todo) => {
+        if (todo.id) {
+            await handleUpdateTodo(todo);
+        } else {
+            await handleAdd(todo.text);
+        }
+    };
 
     return (
         <>
@@ -54,38 +78,28 @@ export const TodoPage = () => {
                                 </th>
                                 <th scope="col" className="px-6 py-3">
                                 </th>
+                                <th scope="col" className="px-6 py-3">
+                                </th>
                             </tr>
                             </thead>
                             <tbody>
                             {todos.map(todo => (
-                                <TodoItem key={todo.id + todo.text} initialToDo={todo} handleDelete={handleDelete}/>
+                                <TodoItem key={todo.id + todo.text} initialToDo={todo} handleDelete={handleDelete} handleEdit={() => setUpdateTodo(todo)}/>
                             ))}
                             </tbody>
                         </table>
-                        <div className="flex-box space-y-6 pt-2">
-                            <label htmlFor="text" className="relative pl-3 mr-2 text-sm/6 font-medium dark:text-white-900">Add Task:</label>
-                            <input
-                                type="text"
-                                name="text"
-                                id="text"
-                                value={newTodoText}
-                                onChange={(e) => setNewTodoText(e.target.value)}
-                                placeholder="Provide a description..."
-                                className="relative rounded-md outline min-w-10 grow py-1.5 pr-3 pl-1 m-5 dark:text-base dark:text-white-900 placeholder:text-gray-400 focus:outline-1 sm:text-sm/6"
-                            />
-                            <input
-                                type="submit"
-                                onClick={handleAdd}
-                                value="Add"
-                                className="relative rounded-md dark:outline-2 bg-blue-950 px-2.5 py-1.5 text-sm font-semibold text-white-900 ring-1 ring-white-300 hover:bg-blue-400"
-                            />
-                        </div>
                     </div>
                 </div>
             </main>
+            <TodoForm onSubmit={handleFormSubmit}/>
+            {updateTodo && (
+                    <TodoForm
+                        onSubmit={handleFormSubmit}
+                        initialTodo={updateTodo}
+                    />
+            )}
         </>
-    )
-        ;
+    );
 };
 
 export default TodoPage;

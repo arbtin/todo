@@ -29,4 +29,14 @@ public class TodoController {
     public Long deleteTodo(@PathVariable Long id) {
         return todoService.deleteTodo(id);
     }
+
+    @PutMapping("/{id")
+    public ResponseEntity<Todo> editTodo(@PathVariable Long id, @RequestBody Todo editedTodo) {
+        try {
+            Todo todo = todoService.editTodo(id, editedTodo);
+            return ResponseEntity.ok(todo);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

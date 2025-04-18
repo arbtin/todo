@@ -3,6 +3,7 @@ package com.bridge.example.todo.todo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TodoService {
@@ -23,5 +24,16 @@ public class TodoService {
     public Long deleteTodo(Long id) {
         todoRepository.deleteById(id);
         return id;
+    }
+
+    public Todo editTodo(Long id, Todo updatedTodo) {
+        Optional<Todo> optionalTodo = todoRepository.findById(id);
+        if (optionalTodo.isEmpty()) {
+            throw new IllegalArgumentException("Todo of id " + id + " not found.");
+        }
+
+        Todo todo = optionalTodo.get();
+        todo.setText(updatedTodo.getText());
+        return todoRepository.save(todo);
     }
 }
