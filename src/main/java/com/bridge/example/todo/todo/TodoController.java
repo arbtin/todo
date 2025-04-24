@@ -30,7 +30,7 @@ public class TodoController {
         return todoService.deleteTodo(id);
     }
 
-    @PutMapping("/{id")
+    @PutMapping("/{id}")
     public ResponseEntity<Todo> editTodo(@PathVariable Long id, @RequestBody Todo editedTodo) {
         try {
             Todo todo = todoService.editTodo(id, editedTodo);

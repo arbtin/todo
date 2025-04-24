@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -16,10 +17,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -35,6 +36,9 @@ public class TodoControllerTest {
 
     @MockitoBean
     private TodoService todoService;
+
+    @Captor
+    ArgumentCaptor<Todo> captor = ArgumentCaptor.forClass(Todo.class);
 
     Todo newTodo;
     Todo savedTodo;
@@ -79,15 +83,15 @@ public class TodoControllerTest {
         // We need to use the same values because of the Mockito verify above
         Todo postTodo = new Todo("save task", "active");
         postTodo.setId(2L);
-        String postTodoJson = new ObjectMapper().writeValueAsString(postTodo);
-        String savedTodoJson = new ObjectMapper().writeValueAsString(savedTodo);
+        String postTodoJson = objectMapper.writeValueAsString(postTodo);
+        String savedTodoJson = objectMapper.writeValueAsString(savedTodo);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/todo")
                         .contentType(APPLICATION_JSON)
                         .content(postTodoJson))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(savedTodoJson));
-        ArgumentCaptor<Todo> captor = ArgumentCaptor.forClass(Todo.class);
+
         Mockito.verify(todoService, times(1)).createTodo(captor.capture());
         assertThat(captor.getValue()).usingRecursiveComparison().isEqualTo(postTodo);
     }
@@ -99,5 +103,33 @@ public class TodoControllerTest {
                 .andExpect(content().json("1"));
 
         Mockito.verify(todoService).deleteTodo(1L);
+    }
+
+    @Test
+    void shouldAcceptPutRequestEditTodo() throws Exception {
+        Long testId = 3L;
+        Todo putTodo = new Todo("wrong task", "active");
+        putTodo.setId(testId);
+
+        Todo updatedTodo = new Todo("correct task", "active");
+        updatedTodo.setId(testId);
+
+        Mockito.when(todoService.editTodo(anyLong(), Mockito.any(Todo.class))).thenReturn(updatedTodo);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/todo/{id}", testId)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(putTodo)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(testId))
+                .andExpect(jsonPath("$.text").value("correct task"));
+
+        ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<Todo> todoCaptor = ArgumentCaptor.forClass(Todo.class);
+
+        Mockito.verify(todoService).editTodo(idCaptor.capture(), todoCaptor.capture());
+
+        assertEquals(idCaptor.getValue(), todoCaptor.getValue().getId());
+        assertEquals("correct task", todoCaptor.getValue().getText());
+        assertEquals(putTodo.getStatus(), todoCaptor.getValue().getStatus());
     }
 }
