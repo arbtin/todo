@@ -116,6 +116,9 @@ public class TodoControllerTest {
 
         Mockito.when(todoService.editTodo(anyLong(), Mockito.any(Todo.class))).thenReturn(updatedTodo);
 
+        ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<Todo> todoCaptor = ArgumentCaptor.forClass(Todo.class);
+
         mockMvc.perform(MockMvcRequestBuilders.put("/api/todo/{id}", testId)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(putTodo)))
@@ -123,13 +126,12 @@ public class TodoControllerTest {
                 .andExpect(jsonPath("$.id").value(testId))
                 .andExpect(jsonPath("$.text").value("correct task"));
 
-        ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<Todo> todoCaptor = ArgumentCaptor.forClass(Todo.class);
-
         Mockito.verify(todoService).editTodo(idCaptor.capture(), todoCaptor.capture());
 
+        ArgumentCaptor<Todo> savedTodoCaptor = ArgumentCaptor.forClass(Todo.class);
+
         assertEquals(idCaptor.getValue(), todoCaptor.getValue().getId());
-        assertEquals("correct task", todoCaptor.getValue().getText());
+        assertEquals("wrong task", todoCaptor.getValue().getText());
         assertEquals(putTodo.getStatus(), todoCaptor.getValue().getStatus());
     }
 }
