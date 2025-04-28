@@ -4,7 +4,7 @@ import { Todo } from "./TodoType.tsx";
 type FetchTodos = () => Promise<Todo[]>;
 type CreateTodo = (text: string) => Promise<Todo>;
 type DeleteTodo = (id: number | null) => Promise<void>;
-type EditTodo =  (id: number | null, text: string) => Promise<Todo>;
+type EditTodo =  (id: number | null, text: string, status: "active" | "complete") => Promise<Todo>;
 type changeStatus =  (id: number | null, status: string) => Promise<Todo>;
 
 export const fetchTodos: FetchTodos = () => (
@@ -21,8 +21,8 @@ export const deleteTodo: DeleteTodo = async (id: number | null) => (
     axios.delete(`/api/todo/${id}`)
 )
 
-export const editTodo: EditTodo = async (id: number | null, text: string) => (
-    axios.put(`/api/todo/${id}`, {text})
+export const editTodo: EditTodo = async (id: number | null, text?: string, status?: "active" | "complete") => (
+    axios.put(`/api/todo/${id}`, {text, status})
         .then((r: AxiosResponse<Todo>) => r.data)
 )
 

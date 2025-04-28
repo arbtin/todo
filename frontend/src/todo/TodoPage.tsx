@@ -27,7 +27,7 @@ export const TodoPage = () => {
         if (!todo.id) return;
 
         try {
-            const updatedTodo = await editTodo(todo.id, todo.text);
+            const updatedTodo = await editTodo(todo.id, todo.text, todo.status);
             setTodos((currentItems) =>
                 currentItems.map((item) =>
                     item.id === todo.id ? updatedTodo : item
@@ -42,6 +42,24 @@ export const TodoPage = () => {
     const handleDelete = (id: number | null) => {
         deleteTodo(id).then(refreshData);
     }
+
+    const handleStatusChange = async (
+        id: number | null,
+        status: "active" | "complete"
+    ) => {
+        if(!id) return;
+
+        try {
+            const updatedTodo = await editTodo(id, text, status);
+            setTodos((currentItems) =>
+                currentItems.map((item) =>
+                    item.id === id ? updatedTodo : item
+                )
+            );
+        } catch (error) {
+            console.log("Failed to update status.", error);
+        }
+    };
 
     const handleFormSubmit = async (todo: Todo) => {
         if (todo.id) {
@@ -84,20 +102,14 @@ export const TodoPage = () => {
                             </thead>
                             <tbody>
                             {todos.map(todo => (
-                                <TodoItem key={todo.id + todo.text} initialToDo={todo} handleDelete={handleDelete} handleEdit={() => setUpdateTodo(todo)}/>
+                                <TodoItem key={todo.id + todo.text} initialToDo={todo} handleDelete={handleDelete} handleEdit={() => setUpdateTodo(todo)} handleStatusChange={handleStatusChange}/>
                             ))}
                             </tbody>
                         </table>
                     </div>
+                    <TodoForm onSubmit={handleFormSubmit} initialTodo={updateTodo} />
                 </div>
             </main>
-            <TodoForm onSubmit={handleFormSubmit}/>
-            {updateTodo && (
-                    <TodoForm
-                        onSubmit={handleFormSubmit}
-                        initialTodo={updateTodo}
-                    />
-            )}
         </>
     );
 };
