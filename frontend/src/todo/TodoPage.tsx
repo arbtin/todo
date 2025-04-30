@@ -1,7 +1,7 @@
 import {useState, useEffect} from "react";
 import {Todo} from "./TodoType.ts";
 import {TodoItem} from "./TodoItem.tsx";
-import {fetchTodos, deleteTodo, createTodo, editTodo} from "./TodoService.tsx";
+import {fetchTodos, deleteTodo, createTodo, editTodo, statusTodo} from "./TodoService.tsx";
 import TodoForm from "./TodoForm.tsx";
 
 export const TodoPage = () => {
@@ -27,7 +27,7 @@ export const TodoPage = () => {
         if (!todo.id) return;
 
         try {
-            const updatedTodo = await editTodo(todo.id, todo.text, todo.status);
+            const updatedTodo = await editTodo(todo.id, todo.text);
             setTodos((currentItems) =>
                 currentItems.map((item) =>
                     item.id === todo.id ? updatedTodo : item
@@ -43,19 +43,18 @@ export const TodoPage = () => {
         deleteTodo(id).then(refreshData);
     }
 
-    const handleStatusChange = async (
-        id: number | null,
-        status: "active" | "complete"
-    ) => {
+    const handleStatus = async (id: number | null, text: string, status: "complete" | "active") => {
         if(!id) return;
 
         try {
-            const updatedTodo = await editTodo(id, text, status);
+            const updatedTodo = await statusTodo(id, text, status);
             setTodos((currentItems) =>
                 currentItems.map((item) =>
                     item.id === id ? updatedTodo : item
                 )
             );
+            refreshData();
+
         } catch (error) {
             console.log("Failed to update status.", error);
         }
@@ -102,7 +101,7 @@ export const TodoPage = () => {
                             </thead>
                             <tbody>
                             {todos.map(todo => (
-                                <TodoItem key={todo.id + todo.text} initialToDo={todo} handleDelete={handleDelete} handleEdit={() => setUpdateTodo(todo)} handleStatusChange={handleStatusChange}/>
+                                <TodoItem key={todo.id + todo.text} initialToDo={todo} handleDelete={handleDelete} handleEdit={() => setUpdateTodo(todo)} handleStatus={handleStatus}/>
                             ))}
                             </tbody>
                         </table>

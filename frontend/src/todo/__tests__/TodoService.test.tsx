@@ -1,6 +1,6 @@
 import {setupServer} from "msw/node";
 import {http, HttpResponse} from "msw";
-import {createTodo, fetchTodos, editTodo, statusChange} from "../TodoService.tsx";
+import {createTodo, fetchTodos, editTodo, statusTodo} from "../TodoService.tsx";
 import { Todo } from "../TodoType.ts";
 import axios from "axios";
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
@@ -57,14 +57,14 @@ describe('TodoService', () => {
     it('should send a status change request with existing id', async () => {
         const expected: Todo = {
             id: 1,
-            text: 'edit Task',
-            status: 'active'
+            text: 'status change',
+            status: 'complete'
         }
         server.use(http.put('/api/todo/1', () =>
             HttpResponse.json(expected, {status: 201})
         ))
 
-        expect(await statusChange(1,'complete')).toStrictEqual(expected);
+        expect(await statusTodo(1,'complete')).toStrictEqual(expected);
     })
 
 });

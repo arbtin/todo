@@ -1,11 +1,15 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import {render, screen, waitFor, within} from "@testing-library/react"
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { userEvent } from '@testing-library/user-event'
 import TodoPage from "../TodoPage.tsx";
 import * as todoService from "../TodoService";
 import {Todo} from "../TodoType";
+import "@vitest/browser/matchers";
 
 describe('Todo Page', () => {
+
+    const user = userEvent.setup()
+
     afterEach(() => {
         vi.restoreAllMocks()
     })
@@ -30,9 +34,9 @@ describe('Todo Page', () => {
         ]
         const mockFetchTodos = vi.spyOn(todoService, 'fetchTodos')
             .mockResolvedValue(expected);
-
         render(<TodoPage/>)
         expect(mockFetchTodos).toHaveBeenCalledOnce();
+
         expect(await screen.findByText('incomplete task')).toBeVisible();
         expect(await screen.findByText('complete task')).toBeVisible();
         const checkboxes = await screen.findAllByRole('checkbox');
@@ -45,14 +49,14 @@ describe('Todo Page', () => {
         vi.spyOn(todoService, 'fetchTodos').mockResolvedValue([]);
         const mockCreateTodo = vi.spyOn(todoService, 'createTodo').mockResolvedValueOnce({id: 10, text: newTodo, status: 'active'});
         render(<TodoPage/>)
-        const taskInput = screen.getByLabelText('Add Task');
-        await userEvent.type(taskInput, newTodo);
-        const addButton = screen.getByRole('button', {name: 'Add'});
-        await userEvent.click(addButton);
+        const taskInput = screen.getByRole("textbox", {name: /add task/i});
+        await user.type(taskInput, newTodo);
+        const addButton = screen.getByRole('button', {name: /add todo$/i});
+        await user.click(addButton);
 
         expect(mockCreateTodo).toHaveBeenCalledWith(newTodo);
         expect(mockCreateTodo).toHaveBeenCalledOnce();
-        expect(screen.getByLabelText('Add Task')).toHaveValue('');
+        expect(taskInput).toHaveValue('');
         expect(await screen.findByText(newTodo)).toBeVisible();
     });
 
@@ -60,8 +64,8 @@ describe('Todo Page', () => {
         vi.spyOn(todoService, 'fetchTodos').mockResolvedValue([])
         const mockCreateTodo = vi.spyOn(todoService, 'createTodo').mockRejectedValue('createTodo was called, but should not have been');
         render(<TodoPage/>)
-        const addButton = screen.getByRole('button', { name: /add/i });
-        await userEvent.click(addButton);
+        const addButton = screen.getByRole('button', { name: /add todo$/i });
+        await user.click(addButton);
         expect(mockCreateTodo).not.toHaveBeenCalled();
     })
 
@@ -74,7 +78,7 @@ describe('Todo Page', () => {
         const mockFetchTodos = vi.spyOn(todoService, 'fetchTodos').mockResolvedValue(someTodos)
         render((<TodoPage/>))
         const deleteButton = await screen.findAllByRole("img", { name: /delete button/i});
-        await userEvent.click(deleteButton[1]);
+        await user.click(deleteButton[1]);
 
         expect(mockDeleteTodo).toHaveBeenCalledWith(6)
         expect(mockFetchTodos).toHaveBeenCalledTimes(2)
@@ -97,21 +101,59 @@ describe('Todo Page', () => {
         });
 
         const editButton = await screen.findAllByRole("img", { name: /edit button/i});
-        await userEvent.click(editButton[0]);
+        await user.click(editButton[0]);
+        const taskInput = screen.getByRole("textbox", {name:/edit task:$/i});
+        await user.type(taskInput, "edited task", {
+            initialSelectionStart: 0,
+            initialSelectionEnd: 9,});
 
-        const taskInput = screen.getByLabelText('Update Task');
-        await userEvent.type(taskInput, "edited task");
+        const updateButton = screen.getByRole('button', {name: /update todo$/i});
+        await user.click(updateButton);
 
-        const updateButton = screen.getByRole('button', {name: /update/i});
-        await userEvent.click(updateButton);
-
-        expect(mockEditTodo).toHaveBeenCalledWith(5, "edited task", "active");
+        expect(mockEditTodo).toHaveBeenCalledWith(5, "edited task");
 
         await waitFor(() => {
             expect(screen.getByText("edited task")).toBeInTheDocument();
             expect(screen.queryByText("update me")).not.toBeInTheDocument();
         });
         expect(mockFetchTodos).toHaveBeenCalledTimes(1)
+    })
+
+    it('should be able to check the status on task checkboxes', async () => {
+        const expected = [
+            {id: 10, text: 'incomplete task', status: 'active'},
+            {id: 11, text: 'complete task', status: 'complete'},
+        ]
+        const mockFetchTodos = vi.spyOn(todoService, 'fetchTodos')
+            .mockResolvedValue(expected);
+        render(<TodoPage/>)
+
+        expect(mockFetchTodos).toHaveBeenCalledOnce();
+
+        const rowOne = await screen.findByRole('row', {name: /10/i});
+        const rowOneCheckbox = within(rowOne).getByRole('checkbox');
+        expect(rowOneCheckbox).not.toBeChecked();
+        const rowTwo = screen.getByRole('row', {name: /11/i});
+        const rowTwoCheckbox = within(rowTwo).getByRole('checkbox');
+        expect(rowTwoCheckbox).toBeChecked();
+
+        await user.click(rowOneCheckbox);
+        expect(rowOneCheckbox).toBeChecked();
+    });
+
+    it('should give the class found on the submit button', async () => {
+        const expected = [
+            {id: 1, text: 'new task', status: 'active'},
+        ]
+        const mockFetchTodos = vi.spyOn(todoService, 'fetchTodos').mockResolvedValue(expected);
+        render((<TodoPage/>))
+        expect(mockFetchTodos).toHaveBeenCalledOnce();
+
+        await waitFor(() => {
+            const updateButton = screen.getByRole("button", { name: /add todo$/i});
+            screen.logTestingPlaygroundURL();
+            expect.element(updateButton).toHaveClass('/relative rounded-md$/i');
+        });
     })
 
 })

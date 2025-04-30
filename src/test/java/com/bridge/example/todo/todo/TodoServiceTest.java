@@ -85,6 +85,30 @@ class TodoServiceTest {
     }
 
     @Test
+    void shouldUpdateTodoStatusSuccessfully() {
+        Long testId = 1L;
+        Todo existingTodo = newTodo;
+        existingTodo.setId(testId);
+        Todo updatedStatusOnly = new Todo("new task", "complete");
+        updatedStatusOnly.setId(testId);
+        Todo userInputStatusChange = new Todo("new task", "complete");
+        userInputStatusChange.setId(testId);
+
+        when(todoRepository.findById(testId)).thenReturn(Optional.of(existingTodo));
+        when(todoRepository.save(any(Todo.class))).thenReturn(updatedStatusOnly);
+
+        Todo updatedRequest = todoService.editTodo(testId, userInputStatusChange);
+
+        assertNotNull(updatedRequest);
+        assertEquals(testId, updatedRequest.getId());
+        assertEquals("new task", updatedRequest.getText());
+        assertEquals(updatedStatusOnly.getStatus(), updatedRequest.getStatus());
+
+        verify(todoRepository).findById(testId);
+        verify(todoRepository).save(existingTodo);
+    }
+
+    @Test
     void shouldNotSaveOnUpdateTodoFail() {
         Long testId = 1L;
         Todo userInputTodo = new Todo("updated task", "active");

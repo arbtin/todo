@@ -34,6 +34,7 @@ public class TodoService {
 
         Todo todo = optionalTodo.get();
         todo.setText(updatedTodo.getText());
+        todo.setStatus(updatedTodo.getStatus());
         return todoRepository.save(todo);
     }
 }
