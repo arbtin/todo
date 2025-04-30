@@ -6,12 +6,14 @@ export default defineWorkspace([
   {
     extends: 'vite.config.ts',
     test: {
+      // an example of file based convention,
+      // you don't have to follow it
+      name: 'browser',
       browser: {
         enabled: false,
         provider: 'webdriverio',
-        // https://vitest.dev/guide/browser/webdriverio
         instances: [
-        { browser: 'chrome' },
+          { browser: 'chrome' },
         ],
       },
     },

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
+import {describe, it, expect, beforeAll, afterAll, afterEach, beforeEach} from "vitest";
 import {setupServer} from "msw/node";
 import {render, screen } from "@testing-library/react";
 import App from "../App";
@@ -19,7 +19,7 @@ describe(App, () => {
 
         it('should increment counter button', async () => {
             render(<HomePage/>)
-            screen.logTestingPlaygroundURL();
+
             await userEvent.click(screen.getByRole("button", { name: /count is /i }));
             expect(screen.queryByRole("button", { name: /count is /i})).toBeInTheDocument();
             await userEvent.click(screen.getByRole("button", { name: /count is 1/i}));
