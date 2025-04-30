@@ -1,5 +1,6 @@
 package com.bridge.example.todo.todo;
 
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,5 +37,11 @@ public class TodoService {
         todo.setText(updatedTodo.getText());
         todo.setStatus(updatedTodo.getStatus());
         return todoRepository.save(todo);
+    }
+
+    public Todo findByStatusOrId(String status, Long id) {
+        return todoRepository.findByStatusOrId(status, id)
+                .or(() -> todoRepository.findById(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Todo was not found"));
     }
 }

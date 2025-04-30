@@ -126,4 +126,17 @@ class TodoServiceTest {
 
     }
 
+    @Test
+    void shouldFindTodoByStatus() {
+        Long testId = 2L;
+        Todo testTodo = new Todo("third tesk", "complete");
+        testTodo.setId(testId);
+        todos.add(testTodo);
+
+        when(todoRepository.findByStatusOrId("complete", testId)).thenReturn(Optional.of(testTodo));
+        Todo singleTodoRequest = todoService.findByStatusOrId("complete", testId);
+        verify(todoRepository, times(1)).findByStatusOrId("complete", testId);
+        assertThat(singleTodoRequest).isEqualTo(testTodo);
+    }
+
 }

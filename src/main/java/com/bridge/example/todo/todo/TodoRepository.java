@@ -2,5 +2,8 @@ package com.bridge.example.todo.todo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface TodoRepository extends JpaRepository<Todo, Long> {
+    Optional<Todo> findByStatusOrId(String status, Long id);
 }
