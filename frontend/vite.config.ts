@@ -27,5 +27,23 @@ export default defineConfig({
     environment: 'jsdom', // Simulates a browser environment
     setupFiles: './src/setupTests.ts', // File for test setup (see below)
     css: true, // Optional: Include CSS in tests if needed
+    include: ['**/*.test.{ts,tsx}'],
+    exclude: ['**/*.browser.{ts,tsx}', 'node_modules', 'dist'],
+    browser: {
+      enabled: false,
+      provider: 'playwright',
+      headless: true,
+      instances: [
+        {browser: 'webkit'},
+      ]
+    },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: ['**/*.browser.{ts,tsx}'],
+    },
+    resolve: {
+      conditions: ['browser'],
+    }
   },
 })

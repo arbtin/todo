@@ -10,7 +10,7 @@ describe('TodoService', () => {
     axios.defaults.baseURL = "http://localhost:3000"
 
     const server = setupServer()
-    beforeAll(() => server.listen({onUnhandledRequest: 'error'}))
+    beforeAll(() => server.listen()) //{onUnhandledRequest: 'error'}
     afterAll(() => server.close())
     afterEach(() => server.resetHandlers())
 

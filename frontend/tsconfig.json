@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "types": ["vitest/globals", "@testing-library/jest-dom", "node"]
+    "baseUrl": "src",
+    "types": ["vitest/globals", "@testing-library/jest-dom", "node"],
+    "paths": {
+      "test-utils": ["./utils/test-utils"]
+    }
   },
   "include": [
     "src",
