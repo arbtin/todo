@@ -1,4 +1,5 @@
 /// <reference types="vitest" />
+/// <reference types="@vitest/browser/providers/playwright" />
 import { defineConfig } from 'vite';
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
@@ -23,10 +24,6 @@ export default defineConfig({
         outDir: 'build',
     },
     test: {
-        globals: true, // Allows using `describe`, `it`, `expect` without imports
-        environment: 'jsdom', // Simulates a browser environment
-        setupFiles: './src/setupTests.ts',
-        css: true, // Optional: Include CSS in tests if needed
         include: ['**/*.browser.{ts,tsx}'],
         browser: {
             enabled: true,

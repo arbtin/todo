@@ -4,7 +4,6 @@ import { userEvent } from '@testing-library/user-event'
 import TodoPage from "../TodoPage.tsx";
 import * as todoService from "../TodoService";
 import {Todo} from "../TodoType";
-import "@vitest/browser/matchers";
 
 describe('Todo Page', () => {
 
